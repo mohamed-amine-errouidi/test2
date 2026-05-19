@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DataPulse — {% if mode == 'login' %}Connexion{% else %}Inscription{% endif %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #818cf8;
+      --bg: #0f0e17;
+      --surface: #1a1825;
+      --surface2: #221f35;
+      --border: #2d2a45;
+      --text: #e8e6f0;
+      --muted: #8b89a0;
+      --error: #f87171;
+      --success: #34d399;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 20% 50%, rgba(79,70,229,.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(99,102,241,.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0,0,0,.5);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: 2rem;
+      justify-content: center;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: .6rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .logo-text { font-size: 1.5rem; font-weight: 700; }
+    h1 { text-align: center; font-size: 1.25rem; font-weight: 600; margin-bottom: .5rem; }
+    .subtitle { text-align: center; color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+    .tabs {
+      display: flex;
+      background: var(--surface2);
+      border-radius: .75rem;
+      padding: .25rem;
+      margin-bottom: 1.75rem;
+    }
+    .tab {
+      flex: 1; text-align: center; padding: .6rem;
+      border-radius: .5rem; cursor: pointer;
+      font-size: .9rem; font-weight: 500;
+      color: var(--muted); transition: all .2s;
+      text-decoration: none;
+    }
+    .tab.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .field { margin-bottom: 1.1rem; }
+    label { display: block; font-size: .85rem; font-weight: 500; margin-bottom: .4rem; color: var(--muted); }
+    input {
+      width: 100%; padding: .7rem 1rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: .6rem; color: var(--text); font-size: .95rem;
+      outline: none; transition: border-color .2s;
+    }
+    input:focus { border-color: var(--primary); }
+    .btn {
+      width: 100%; padding: .8rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; font-size: 1rem; font-weight: 600;
+      border: none; border-radius: .75rem; cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      margin-top: .5rem;
+    }
+    .btn:hover { opacity: .9; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .alert {
+      padding: .75rem 1rem;
+      border-radius: .6rem;
+      font-size: .88rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .alert.error   { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: var(--error); }
+    .alert.success { background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.3); color: var(--success); }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">📊</div>
+      <div class="logo-text">DataPulse</div>
+    </div>
+    <div class="tabs">
+      <a href="/login"    class="tab {% if mode == 'login' %}active{% endif %}">Connexion</a>
+      <a href="/register" class="tab {% if mode == 'register' %}active{% endif %}">Inscription</a>
+    </div>
+
+    <div class="alert error"   id="alertError"></div>
+    <div class="alert success" id="alertSuccess"></div>
+
+    {% if mode == 'login' %}
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="vous@exemple.com" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn" id="submitBtn">Se connecter</button>
+    </form>
+    {% else %}
+    <form id="registerForm">
+      <div class="field">
+        <label>Nom d'utilisateur</label>
+        <input type="text" id="username" placeholder="MonNom" required autocomplete="username" />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="vous@exemple.com" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>Mot de passe <span style="color:var(--muted);font-weight:400">(6 car. min.)</span></label>
+        <input type="password" id="password" placeholder="••••••••" required autocomplete="new-password" />
+      </div>
+      <button type="submit" class="btn" id="submitBtn">Créer mon compte</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <script>
+    function getCsrf() {
+      return document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('csrf_token='))?.split('=')[1] || '';
+    }
+    function showError(msg) {
+      const el = document.getElementById('alertError');
+      el.textContent = msg; el.style.display = 'block';
+      document.getElementById('alertSuccess').style.display = 'none';
+    }
+    function showSuccess(msg) {
+      const el = document.getElementById('alertSuccess');
+      el.textContent = msg; el.style.display = 'block';
+      document.getElementById('alertError').style.display = 'none';
+    }
+
+    const form = document.getElementById('loginForm') || document.getElementById('registerForm');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Chargement…';
+
+      const isLogin = !!document.getElementById('loginForm');
+      const body = { email: document.getElementById('email').value, password: document.getElementById('password').value };
+      if (!isLogin) body.username = document.getElementById('username').value;
+
+      try {
+        const res = await fetch(isLogin ? '/api/login' : '/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Erreur.'); return; }
+        if (data.verify) {
+          window.location.href = '/verify?email=' + encodeURIComponent(data.email);
+          return;
+        }
+        showSuccess(isLogin ? 'Connexion réussie…' : 'Compte créé !');
+        setTimeout(() => { window.location.href = '/'; }, 600);
+      } catch(err) {
+        showError('Erreur réseau.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = isLogin ? 'Se connecter' : 'Créer mon compte';
+      }
+    });
+  </script>
+</body>
+</html>
